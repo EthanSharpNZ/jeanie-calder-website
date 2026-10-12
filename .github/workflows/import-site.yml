@@ -1,0 +1,145 @@
+name: Import approved Jeanie Calder website
+
+on:
+  push:
+    branches: [main]
+    paths: ['.github/site-import.json']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: initial-site-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.repository == 'EthanSharpNZ/jeanie-calder-website'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+      - name: Verify and unpack the approved encrypted snapshot
+        id: unpack
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import hashlib, json, os, pathlib, subprocess, tarfile, tempfile, urllib.parse, urllib.request
+          root = pathlib.Path.cwd()
+          config_file = root / '.github/site-import.json'
+          if not config_file.exists():
+              print('No pending import; nothing to do.')
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+                  out.write('imported=false\n')
+              raise SystemExit(0)
+          if (root / 'package.json').exists():
+              raise SystemExit('A website already exists. Refusing to overwrite it.')
+          tracked = subprocess.check_output(['git', 'ls-files', '-z']).decode().split('\0')
+          allowed = {'README.md', '.github/workflows/import-site.yml', '.github/site-import.json', ''}
+          if any(path not in allowed for path in tracked):
+              raise SystemExit('Unexpected repository files; review before importing.')
+          cfg = json.loads(config_file.read_text())
+          url = cfg['url']
+          parsed = urllib.parse.urlsplit(url)
+          if parsed.scheme != 'https' or parsed.hostname != 'd2ol7oe51mr4n9.cloudfront.net':
+              raise SystemExit('Unexpected transfer host.')
+          password = cfg['transfer_password']
+          # One-time transport password, not a GitHub/account credential.
+          print('::add-mask::' + password)
+          print('::add-mask::' + url)
+          if cfg['source_commit'] != '50a5da0664286ca206ee5f2e56652c948999ba3f':
+              raise SystemExit('Unexpected source revision.')
+          with tempfile.TemporaryDirectory(prefix='site-import-') as tmp:
+              tmp = pathlib.Path(tmp)
+              encrypted = tmp / 'snapshot.enc'
+              with urllib.request.urlopen(url, timeout=90) as response:
+                  data = response.read(25000001)
+              if len(data) > 25000000 or len(data) != cfg['encrypted_bytes']:
+                  raise SystemExit('Invalid archive size.')
+              if hashlib.sha256(data).hexdigest() != cfg['encrypted_sha256']:
+                  raise SystemExit('Encrypted archive checksum mismatch.')
+              encrypted.write_bytes(data)
+              archive = tmp / 'snapshot.tar.gz'
+              env = dict(os.environ, SITE_TRANSFER_PASSWORD=password)
+              subprocess.run(['openssl', 'enc', '-d', '-aes-256-cbc', '-pbkdf2', '-iter', '200000', '-md', 'sha256', '-pass', 'env:SITE_TRANSFER_PASSWORD', '-in', str(encrypted), '-out', str(archive)], env=env, check=True, stdout=subprocess.DEVNULL)
+              if hashlib.sha256(archive.read_bytes()).hexdigest() != cfg['archive_sha256']:
+                  raise SystemExit('Source archive checksum mismatch.')
+              extracted = tmp / 'source'
+              extracted.mkdir()
+              with tarfile.open(archive, 'r:gz') as tar:
+                  members = tar.getmembers()
+                  if len(members) > 1000 or sum(m.size for m in members) > 50000000:
+                      raise SystemExit('Unexpected archive contents.')
+                  for member in members:
+                      p = pathlib.PurePosixPath(member.name)
+                      if p.is_absolute() or '..' in p.parts or not (member.isfile() or member.isdir()):
+                          raise SystemExit('Unsafe archive entry.')
+                      if any(part in {'.git', 'node_modules', 'dist', '.github'} for part in p.parts):
+                          raise SystemExit('Archive contains an excluded directory.')
+                      if p.name == '.env' or p.name.startswith('.env.') or p.suffix.lower() in {'.mov', '.mp4', '.pdf', '.zip', '.woff', '.woff2', '.ttf', '.otf'}:
+                          raise SystemExit('Archive contains an excluded file.')
+                  tar.extractall(extracted, members=members, filter='data')
+              files = sorted(p for p in extracted.rglob('*') if p.is_file())
+              if len(files) != cfg['file_count']:
+                  raise SystemExit('Source file count mismatch.')
+              manifest = ''.join(hashlib.sha256(p.read_bytes()).hexdigest() + '  ' + p.relative_to(extracted).as_posix() + '\n' for p in files)
+              if hashlib.sha256(manifest.encode()).hexdigest() != cfg['manifest_sha256']:
+                  raise SystemExit('Per-file manifest mismatch.')
+              required = ['package.json', 'package-lock.json', '.npmrc', '.nvmrc', 'vite.static.config.ts', 'static.html', 'src/assets/jeanie-calder-front-cover.webp', 'src/assets/morpho-menelaus.webp', 'src/components/author-website.tsx', 'src/components/hero-butterfly.tsx', 'src/assets/butterfly-sequence/manifest.json']
+              required += [f'src/assets/butterfly-sequence/butterfly-atlas-{i}.webp' for i in range(6)]
+              required += ['src/assets/butterfly-sequence/butterfly-poster.webp']
+              if any(not (extracted / p).is_file() for p in required):
+                  raise SystemExit('A required website file is missing.')
+              for source in files:
+                  target = root / source.relative_to(extracted)
+                  target.parent.mkdir(parents=True, exist_ok=True)
+                  target.write_bytes(source.read_bytes())
+                  target.chmod(source.stat().st_mode & 0o777)
+              (root / 'SOURCE_IMPORT.md').write_text('# Website source import\n\nImported from the approved Jeanie Calder Lovable project.\n\nSource project: `eec0f302-f635-43cf-9f8f-c55e914912fe`\nSource commit: `' + cfg['source_commit'] + '`\nSource file count: ' + str(cfg['file_count']) + '\nManifest SHA-256: `' + cfg['manifest_sha256'] + '`\n\nAll source files and the nine approved WebP assets were verified byte-for-byte before import. No account credentials, original stock MOV, publisher PDF, font binaries or chat history are included. GitHub is a separate source copy, not an automatic Lovable sync. The original starter README remains in Git history.\n\n## Verified imported files\n\n```text\n' + manifest + '```\n')
+          config_file.unlink()
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write('imported=true\n')
+          print('Approved snapshot verified and unpacked.')
+          PY
+      - uses: actions/setup-node@v4
+        if: steps.unpack.outputs.imported == 'true'
+        with:
+          node-version: '22'
+      - name: Clean install, tests and production build
+        if: steps.unpack.outputs.imported == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund
+          npm test
+          npm run build
+          test -f dist/index.html
+          test -f dist/_headers
+          test -f dist/robots.txt
+          if grep -R -l -E 'id-preview--|/__l5e/assets-v1/' dist; then
+            echo 'Unexpected dependency on the editor preview in production output.'
+            exit 1
+          fi
+      - name: Commit verified source without overwriting concurrent work
+        if: steps.unpack.outputs.imported == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(git rev-parse HEAD)"
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$expected"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --name-only | grep -E '(^|/)(node_modules|dist|\.env)(/|$)|\.(mov|mp4|pdf|zip|woff2?|ttf|otf)$'; then
+            echo 'Excluded file staged; aborting.'
+            exit 1
+          fi
+          git commit -m 'Import approved Jeanie Calder website with verified local assets'
+          git push origin HEAD:main
+          printf '## Website import complete\n\nCommit: `%s`\n\nClean install, tests and static production build passed.\n' "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"

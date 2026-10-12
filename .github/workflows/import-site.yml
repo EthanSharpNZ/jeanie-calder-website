@@ -2,7 +2,7 @@ name: Import approved Jeanie Calder website
 on:
   push:
     branches: [main]
-    paths: ['.github/site-import.json']
+    paths: ['.github/site-import.json', '.github/workflows/import-site.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -77,7 +77,7 @@ jobs:
                   target.parent.mkdir(parents=True, exist_ok=True)
                   target.write_bytes(p.read_bytes())
                   target.chmod(p.stat().st_mode & 0o777)
-              (root / 'SOURCE_IMPORT.md').write_text('# Website source import\n\nSource project: `eec0f302-f635-43cf-9f8f-c55e914912fe`\nSource commit: `' + cfg['source_commit'] + '`\nSource file count: ' + str(cfg['file_count']) + '\nManifest SHA-256: `' + cfg['manifest_sha256'] + '`\n\nFiles and nine approved WebP assets were verified byte-for-byte. No account credentials, original MOV, publisher PDF, font binaries or chat history are included. This is a separate GitHub copy, not an automatic Lovable sync. The initial README remains in Git history.\n\n## Verified imported files\n\n```text\n' + manifest + '```\n')
+              (root / 'SOURCE_IMPORT.md').write_text('# Website source import\n\nSource project: `eec0f302-f635-43cf-9f8f-c55e914912fe`\nSource commit: `' + cfg['source_commit'] + '`\nSource file count: ' + str(cfg['file_count']) + '\nManifest SHA-256: `' + cfg['manifest_sha256'] + '`\n\nFiles and nine approved WebP assets were verified byte-for-byte before the import-time dependency correction below. No account credentials, original MOV, publisher PDF, font binaries or chat history are included. This is a separate GitHub copy, not an automatic Lovable sync. The initial README remains in Git history.\n\n## Verified original imported files\n\n```text\n' + manifest + '```\n')
           cfg_path.unlink()
           with open(os.environ['GITHUB_OUTPUT'], 'a') as out: out.write('imported=true\n')
           print('Approved source verified and unpacked.')
@@ -86,11 +86,12 @@ jobs:
         if: steps.unpack.outputs.imported == 'true'
         with:
           node-version: '22'
-      - name: Clean install, tests and production build
+      - name: Repair test dependency, clean install, tests and production build
         if: steps.unpack.outputs.imported == 'true'
         shell: bash
         run: |
           set -euo pipefail
+          npm install --save-dev '@testing-library/dom@^10' --no-audit --no-fund
           npm ci --no-audit --no-fund
           npm test
           npm run build
@@ -98,6 +99,12 @@ jobs:
           test -f dist/_headers
           test -f dist/robots.txt
           if grep -R -l -E 'id-preview--|/__l5e/assets-v1/' dist; then exit 1; fi
+          cat >> SOURCE_IMPORT.md <<'EOF'
+
+          ## Import-time dependency correction
+
+          A clean GitHub runner exposed a missing explicit `@testing-library/dom` development dependency required by `@testing-library/react`. Added the compatible v10 dependency and regenerated `package-lock.json`, then successfully ran `npm ci`, all tests and `npm run build`. The two package files therefore differ from the original snapshot hashes above; website code, styles, content, manifest and all nine media assets are unchanged.
+          EOF
       - name: Commit verified website
         if: steps.unpack.outputs.imported == 'true'
         env:

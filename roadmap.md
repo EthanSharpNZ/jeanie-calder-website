@@ -1,0 +1,18 @@
+# Jeanie Calder preview
+- [x] Acquire and visually verify real front cover
+- [x] Implement editorial one-page site and requested interactions
+- [x] Prepare portable static build configuration and team handover
+- [x] Test fees, composer, navigation, accessibility and mobile layouts
+- [x] Replace programme interest field with branded accessible selector and align contact fields
+- [x] Verify open menu at desktop/mobile sizes, keyboard, collision handling and enquiry flows
+- [x] Implement approved quieter author layout and licensed photo-based butterfly
+- [x] Include butterfly in static asset export and attribution/handover
+- [x] Verify clean-up screenshots, animation, accessibility and enquiry regression tests
+- [x] Anchor the wing-only butterfly on the cover and add three still fee symbols
+- [x] Verify cover/fee screenshots, motion, dropdown, enquiry flows and existing tests
+- [x] Replace hero with uploaded transparent sequence, corner landing and independent scroll departure
+- [x] Include sequence in portable media, correct credits and private certificate checklist
+- [x] Verify animation phases, accessibility, failure handling and preserved enquiry flows
+- [x] Replace scroll departure with persistent perch, lower cover anchor and footer motion toggle
+- [x] Make header transparent/non-sticky and unify editorial/supporting typography
+- [x] Verify persistent motion, font roles, phone layouts and preserved enquiries

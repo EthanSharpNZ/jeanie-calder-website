@@ -33,7 +33,7 @@ test("without JavaScript the complete page and contact link remain usable", asyn
   await context.close();
 });
 
-for (const width of [1440, 390, 320]) {
+for (const width of [1440, 1024, 768, 390, 320]) {
   test(`hydration, navigation, contact and accessibility at ${width}px`, async ({ page }) => {
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
@@ -41,6 +41,7 @@ for (const width of [1440, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(page.locator(".book-cover")).toBeVisible();
+    await expect(page.locator(".site-header")).toHaveCSS("position", "sticky");
     await expect.poll(() => page.locator(".book-cover").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
     if (width < 760) {
       await page.getByRole("button", { name: "Open navigation menu" }).click();
@@ -57,6 +58,8 @@ for (const width of [1440, 390, 320]) {
       await page.getByRole("link", { name: action, exact: true }).click();
       await expect(page.getByRole("combobox")).toHaveText(interest!);
     }
+    await expect.poll(() => page.locator("#contact").evaluate(el => el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(92);
+    await expect(page.locator("footer .motion-toggle, footer .credit-trigger")).toHaveCount(0);
     await page.getByRole("combobox").focus();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("listbox")).toBeVisible();
@@ -70,22 +73,21 @@ for (const width of [1440, 390, 320]) {
     await page.getByLabel("Message", { exact: true }).fill("Please send book information.");
     await page.evaluate(() => Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: () => Promise.reject(new Error("denied")) } }));
     await page.getByRole("button", { name: "Copy message" }).click();
-    await expect(page.getByLabel("Your message — select and copy")).toContainText("Please send book information.");
-    await page.getByRole("button", { name: "Image credit" }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await page.keyboard.press("Escape");
-    await expect(page.getByRole("button", { name: "Image credit" })).toBeFocused();
+    await expect(page.getByLabel("Your message to copy")).toContainText("Please send book information.");
+    await expect(page.getByRole("button", { name: "Image credit" })).toHaveCount(0);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
     await expect(page.locator(".hero-butterfly-canvas")).toHaveAttribute("data-phase", "idle", { timeout: 20000 });
+    const headerBottom = await page.locator(".site-header").evaluate(el => el.getBoundingClientRect().bottom);
+    expect(Number(await page.locator(".hero-butterfly-canvas").getAttribute("data-top"))).toBeGreaterThan(headerBottom);
     await page.screenshot({ path: `artifacts/site-${width}.png`, fullPage: true });
   });
 }
 
-test("butterfly arrives once, perches, pauses and respects reduced motion", async ({ page }) => {
+test("butterfly settles without a pause control and respects reduced motion", async ({ page }) => {
   await page.goto("/");
   const canvas = page.locator(".hero-butterfly-canvas");
   await expect(canvas).toHaveAttribute("data-phase", "idle", { timeout: 20000 });
@@ -93,7 +95,13 @@ test("butterfly arrives once, perches, pauses and respects reduced motion", asyn
   await expect(canvas).toHaveAttribute("data-running", "false");
   await page.locator("#book").scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute("data-phase", "idle");
-  await page.getByRole("button", { name: "Pause animation" }).click();
+  await expect(page.getByRole("button", { name: "Pause animation" })).toHaveCount(0);
+  await page.locator("#book").scrollIntoViewIfNeeded();
+  await expect(canvas).toHaveAttribute("data-running", "false", { timeout: 6000 });
+  await page.reload();
+  await expect(canvas).toHaveAttribute("data-phase", "idle", { timeout: 15000 });
+  await expect(canvas).toHaveAttribute("data-running", "false", { timeout: 6000 });
+  await page.locator("#contact").scrollIntoViewIfNeeded();
   await page.locator("#book").scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute("data-running", "false");
   await page.emulateMedia({ reducedMotion: "reduce" });

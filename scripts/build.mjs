@@ -38,7 +38,7 @@ if (!html.includes('<div id="root"></div>')) throw new Error("Missing SSG insert
 html = html.replace('<div id="root"></div>', () => `<div id="root">${render()}</div>`);
 // Preload only the two above-the-fold font faces; font-display:swap remains enabled.
 const assets = await readdir("dist/assets");
-const fonts = ["cormorant-garamond-latin-400-normal", "dm-sans-latin-400-normal"];
+const fonts = ["cormorant-garamond-latin-600-normal", "dm-sans-latin-400-normal"];
 const preloads = fonts.map(prefix => {
   const file = assets.find(name => name.startsWith(prefix) && name.endsWith(".woff2"));
   if (!file) throw new Error(`Missing font: ${prefix}`);

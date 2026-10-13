@@ -41,3 +41,9 @@ These are single local lab runs with Lighthouse 13.5.0, standard mobile/desktop 
 The owner approved this update for commit and push. Synchronize with GitHub main and release through the existing Cloudflare Git deployment. Verify its build/deploy commands against README.md. Do not create a new domain or hosting project.
 
 After deployment, confirm the live source contains the page content and metadata, indexing headers and sitemap are correct, the social image resolves, and unknown paths return 404. Then rerun RateMySite and mobile/desktop Lighthouse. The local scores support aiming for A, but do not guarantee it. Safari/Firefox and real-device/field performance have not been verified in this pass. The email composer remains a draft/copy workflow, not a backend submission service.
+
+## Approved design refinement on 13 October 2026
+
+Refined hero typography and book depth, sticky translucent navigation with butterfly clearance, glass-effect buttons, concise email-informed programme and author copy, distinct section backgrounds and a fuller footer. Replaced the template favicon with a Jeanie Calder monogram. Removed visitor image credits by replacing the historical fee photograph with original SVG artwork. Removed pause controls and bounded automatic animation to 4.8 seconds before a permanent perch. Email drafts remain the approved contact method.
+
+Verified production build, TypeScript, 19 unit tests and responsive accessibility checks at 1440, 1024, 768, 390 and 320 pixels. Previous performance scores above describe the earlier production build, not a new rating for this revision.

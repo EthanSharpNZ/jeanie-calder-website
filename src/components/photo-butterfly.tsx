@@ -1,8 +1,8 @@
-// Adapted from Morpho menelaus, Gregory Phillips / Lycaon, CC BY-SA 3.0.
-// Static fee symbols only; see ASSET_CREDITS.md. Hero uses separate supplied video frames.
-import butterflyUrl from "@/assets/optimized/fee-butterfly.webp";
-const butterfly = { url: butterflyUrl };
-
+// Original geometric fee symbol. The client-supplied hero animation is separate.
 export function ButterflyFeeSymbol() {
-  return <img className="butterfly-fee-symbol" src={butterfly.url} alt="" aria-hidden="true" width="678" height="666" loading="lazy" />;
+  return <svg className="butterfly-fee-symbol" viewBox="0 0 32 32" width="32" height="32" aria-hidden="true" focusable="false">
+    <path d="M15 15C11 4 2 2 3 11c0 5 6 8 12 7C5 16 5 27 10 27c4 0 5-6 6-9" fill="#507b9b" />
+    <path d="M17 15C21 4 30 2 29 11c0 5-6 8-12 7 10-2 10 9 5 9-4 0-5-6-6-9" fill="#769bb2" />
+    <path d="M16 12v11m0-10-3-5m3 5 3-5" fill="none" stroke="#51425b" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>;
 }

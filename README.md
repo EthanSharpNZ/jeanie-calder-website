@@ -10,7 +10,7 @@ GitHub is the source of truth. The site is served by **Cloudflare Workers Static
 - `src/lib/author-content.ts`: shared copy, programme fees and email-draft encoding.
 - `src/styles.css`: approved pastel palette, typography and responsive layout.
 - `src/components/deferred-butterfly.tsx`: loads the animation after the book cover and browser idle time.
-- `src/components/hero-butterfly.tsx`: approved sprite animation, persistent perch, pause and reduced-motion support. Reduced-motion/save-data users load only the poster.
+- `src/components/hero-butterfly.tsx`: approved sprite animation with a brief arrival and wing movement, a permanent still perch after 4.8 seconds, and reduced-motion support. Reduced-motion/save-data users load only the poster.
 - `static.html`: initial-head metadata, canonical URL, Open Graph/Twitter image and Person/Book/WebSite structured data.
 - `src/ssg-entry.tsx` / `src/static-entry.tsx`: build-time rendering and browser hydration.
 - `public/robots.txt`, `sitemap.xml`, `_headers`, `404.html`: crawling, security/cache headers and missing-page handling.

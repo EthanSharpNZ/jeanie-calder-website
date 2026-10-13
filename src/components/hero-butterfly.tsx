@@ -61,6 +61,8 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
     let readinessTimer = 0;
     let phase: FlightPhase = "waiting";
     let elapsed = 0;
+    let totalMotion = 0;
+    let settled = false;
     let previous = 0;
     let lastDraw = 0;
     let atlases: HTMLImageElement[] = [];
@@ -106,6 +108,8 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
         context.drawImage(image, frame.sx, frame.sy, frame.w, frame.h, at.x + (frame.x - FOOT.x) * at.scale, at.y + (frame.y - FOOT.y) * at.scale, frame.w * at.scale, frame.h * at.scale);
       }
       canvas?.setAttribute("data-frame", String(frameIndex));
+      const drawnTop = usePoster ? sequence.posterBounds[1] : sequence.frames[frameIndex]?.y;
+      canvas?.setAttribute("data-top", String(at.y + ((drawnTop ?? FOOT.y) - FOOT.y) * at.scale));
       canvas?.setAttribute("data-anchor", `${at.x.toFixed(2)},${at.y.toFixed(2)}`);
     }
     function cancel() {
@@ -124,7 +128,7 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
       if (phase === "waiting") setPhase(still || pausedRef.current ? "idle" : "arrival");
       if (still) { setPhase("idle"); draw(REST_START, point(), true); }
       else if (phase === "idle") draw(currentFrame, point());
-      if (shouldAnimate(phase, inView, document.hidden, pausedRef.current, still)) {
+      if (!settled && shouldAnimate(phase, inView, document.hidden, pausedRef.current, still)) {
         canvas?.setAttribute("data-running", "true");
         raf = requestAnimationFrame(tick);
       }
@@ -146,6 +150,17 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
       const delta = previous ? Math.min(now - previous, 60) : 0;
       previous = now;
       elapsed += delta;
+      totalMotion += delta;
+      // A brief arrival and two wing strokes, then a permanent resting pose.
+      // No ongoing autoplay requires a separate visitor pause control.
+      if (totalMotion >= 4800) {
+        settled = true;
+        setPhase("idle");
+        currentFrame = REST_START;
+        draw(currentFrame, point());
+        cancel();
+        return;
+      }
       if (now - lastDraw >= 1000 / 30) {
         lastDraw = now;
         if (phase === "arrival") {
@@ -155,6 +170,9 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
           const approach = (1 - p) ** 3;
           at.x -= (at.x + 120) * approach;
           at.y -= 100 * approach;
+          const headerBottom = document.querySelector(".site-header")?.getBoundingClientRect().bottom ?? 0;
+          const frameTop = sequence.frames[currentFrame]?.y ?? FOOT.y;
+          at.y = Math.max(at.y, headerBottom + 8 - (frameTop - FOOT.y) * at.scale);
           draw(currentFrame, at);
           if (phaseAfterElapsed(phase, elapsed) === "idle") { setPhase("idle"); currentFrame = REST_START; }
         } else if (phase === "idle") {

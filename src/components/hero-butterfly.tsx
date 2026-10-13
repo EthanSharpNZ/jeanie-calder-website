@@ -64,6 +64,7 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
     let previous = 0;
     let lastDraw = 0;
     let atlases: HTMLImageElement[] = [];
+    let atlasLoad: Promise<void> | undefined;
     let poster: HTMLImageElement | undefined;
     let currentFrame = REST_START;
     let viewportWidth = window.innerWidth;
@@ -163,8 +164,18 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
       }
       raf = requestAnimationFrame(tick);
     }
-    function motionChanged() {
+    function loadAtlases() {
+      atlasLoad ??= Promise.all(atlasAssets.map(asset => decodeImage(asset.url, abortController.signal)))
+        .then(images => { atlases = images; })
+        .catch(() => { failed = true; still = true; });
+      return atlasLoad;
+    }
+    async function motionChanged() {
       still = failed || reduced.matches || Boolean(connection?.saveData);
+      if (!still && !atlases.length) {
+        cancel();
+        await loadAtlases();
+      }
       refresh();
     }
     refreshRef.current = refresh;
@@ -182,14 +193,12 @@ export function HeroButterfly({ paused = false }: { paused?: boolean }) {
     const coverLoaded = () => resolveCover?.();
     const coverReady = cover.complete && cover.naturalWidth ? Promise.resolve() : new Promise<void>(resolve => { resolveCover = resolve; cover.addEventListener("load", coverLoaded, { once: true }); cover.addEventListener("error", coverLoaded, { once: true }); });
     async function ready() {
+      await coverReady;
+      if (disposed) return;
       try { poster = await decodeImage(posterAsset.url, abortController.signal); } catch { /* Quiet empty fallback. */ }
       if (disposed) return;
-      // Decode even for still mode so changing OS preference never restarts arrival.
-      if (!connection?.saveData) {
-        try { atlases = await Promise.all(atlasAssets.map(asset => decodeImage(asset.url, abortController.signal))); }
-        catch { failed = true; still = true; }
-      } else { failed = true; }
-      await coverReady;
+      // Reduced-motion and save-data visitors need only the 5 KB poster.
+      if (!still) await loadAtlases();
       if (disposed) return;
       await new Promise(resolve => { readinessTimer = window.setTimeout(resolve, 150); });
       if (disposed || !cover?.naturalWidth) return;

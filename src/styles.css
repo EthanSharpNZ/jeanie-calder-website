@@ -1,5 +1,10 @@
 @import "tailwindcss" source(none);
-@source "../src";
+@source "./components/author-website.tsx";
+@source "./components/programme-interest-select.tsx";
+@source "./components/ui/button.tsx";
+@source "./components/ui/dialog.tsx";
+@source "./components/ui/select.tsx";
+@source "./routes";
 @import "tw-animate-css";
 @import "@fontsource/cormorant-garamond/latin-400.css";
 @import "@fontsource/dm-sans/latin-400.css";

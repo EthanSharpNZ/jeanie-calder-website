@@ -9,7 +9,7 @@ export function ProgrammeInterestSelect({ value, onValueChange }: { value: Inter
 
   return <Select name="interest" value={value} onValueChange={changeInterest}>
     <SelectTrigger id="interest" aria-labelledby="interest-label" className="interest-trigger">
-      <SelectValue />
+      <SelectValue>{value}</SelectValue>
     </SelectTrigger>
     <SelectContent className="interest-panel" position="popper" align="start" sideOffset={8} collisionPadding={12}>
       {interests.map(interest => <SelectItem key={interest} value={interest} className="interest-option">{interest}</SelectItem>)}

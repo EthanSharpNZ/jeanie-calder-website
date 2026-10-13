@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { rename } from "node:fs/promises";
 import { join } from "node:path";
 
-// Portable Cloudflare Pages build. All media are repository-owned files in
+// Cloudflare Workers Static Assets build. All media are repository-owned files in
 // src/assets, bundled by Vite; the build makes no network requests.
 function renameEntryHtml(): Plugin {
   return {

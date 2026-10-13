@@ -1,17 +1,10 @@
-<!-- LOVABLE:BEGIN -->
-> [!IMPORTANT]
-> This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
-> published git history — force pushing, or rebasing/amending/squashing commits
-> that are already pushed — as it rewrites history on Lovable's side and the
-> user will likely lose their project history.
->
-> Commits you push to the connected branch sync back to Lovable and show up in
-> the editor, so keep the branch in a working state.
-<!-- LOVABLE:END -->
+# Repository workflow
+
+GitHub is the source of truth. Do not use Lovable or rewrite published Git history. Deploy only approved updates through the existing Cloudflare Worker; do not change the production domain.
 
 ## Architecture rules
 - Keep the author experience in a shared browser-safe React component, consumed by both the existing TanStack preview route and the independent static entry, so hosting never needs the preview server.
-- Use a separate standard Vite configuration for `npm run build` and output `dist/index.html`, because the team's Cloudflare Pages deployment must contain no server runtime.
+- Use a separate standard Vite configuration for `npm run build` and output `dist/index.html`, because the team's Cloudflare Workers Static Assets deployment must contain no server runtime.
 - Keep approved media as repository-owned files in src/assets imported as ordinary Vite assets, so external builds and visitors never depend on editor asset infrastructure.
 - Keep programme information and pure enquiry encoding in one shared module with concrete rule tests, so displayed fees and contact selections stay consistent.
 - Use Radix dialogs for mobile navigation, footer review notes and image credits, because focus trapping, Escape handling and focus return must be accessible.

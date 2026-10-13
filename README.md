@@ -1,64 +1,57 @@
 # Jeanie Calder — Author Website
 
-A single-page author website **design preview**, prepared for The Web Guys. No database, login, payments, analytics or enquiry storage. The contact form composes an email draft or copies a message; it does not send enquiries itself.
+GitHub is the source of truth. The site is served by **Cloudflare Workers Static Assets** at https://jeanie-calder-website.studionz.workers.dev/. Do not change the production domain or use Lovable to edit or deploy this project.
 
-## Repository handover
+## Rendering and architecture
 
-This private repository contains the complete approved website source, real book cover, fee butterfly photograph, six transparent butterfly animation atlases and poster. The latest transparent header, consistent typography and persistent perched butterfly behaviour are included. GitHub is a **separate source copy**, not an automatic Lovable sync. Make subsequent handover/hosting changes here.
+`npm run build` runs `scripts/build.mjs`: it derives optimized delivery images from the approved masters, builds the Vite browser bundle, renders the shared `AuthorWebsite` component to HTML using React on the build machine, and writes the complete page to `dist/index.html`. The browser hydrates that same tree for navigation, the enquiry composer and animation. Cloudflare serves only `dist`; no server runtime, database, form service or runtime secrets are needed. Never publish `dist-ssr`.
 
-The source was imported from Lovable commit `50a5da0664286ca206ee5f2e56652c948999ba3f`. All 107 source files and the nine WebP assets were verified before import. A clean GitHub runner exposed a missing explicit `@testing-library/dom` development dependency; that dependency and the npm lockfile were corrected without changing the website design or content. See **SOURCE_IMPORT.md** for the import manifest and correction.
+- `src/components/author-website.tsx`: semantic page, accessible navigation and custom enquiry form.
+- `src/lib/author-content.ts`: shared copy, programme fees and email-draft encoding.
+- `src/styles.css`: approved pastel palette, typography and responsive layout.
+- `src/components/deferred-butterfly.tsx`: loads the animation after the book cover and browser idle time.
+- `src/components/hero-butterfly.tsx`: approved sprite animation, persistent perch, pause and reduced-motion support. Reduced-motion/save-data users load only the poster.
+- `static.html`: initial-head metadata, canonical URL, Open Graph/Twitter image and Person/Book/WebSite structured data.
+- `src/ssg-entry.tsx` / `src/static-entry.tsx`: build-time rendering and browser hydration.
+- `public/robots.txt`, `sitemap.xml`, `_headers`, `404.html`: crawling, security/cache headers and missing-page handling.
 
-Verification on the GitHub runner: clean `npm ci`, **19 tests passed**, and `npm run build` passed with `dist/index.html`, security headers and all local assets. [Successful import/build run](https://github.com/EthanSharpNZ/jeanie-calder-website/actions/runs/38241057497). A live Cloudflare deployment has not yet been verified.
+The original assets remain byte-for-byte intact under `src/assets`. Responsive WebP derivatives are in `src/assets/optimized`; the social JPEG is produced in `dist/images`. Preserve `ASSET_CREDITS.md`. Fee butterflies are decorative and deliberately use empty alt attributes; the meaningful book image has descriptive alt text.
 
-## Local development and testing
+The form opens an email draft or copies text on request; it never sends or stores messages. Without JavaScript, content, navigation and the direct email link remain available, while script-dependent controls are hidden.
 
-Use **Node.js 22** and npm. Keep `.npmrc` and `package-lock.json`; `legacy-peer-deps=true` is required for this dependency tree.
+## Development and verification
 
-```sh
-npm ci
-npm test
-npm run dev
-```
-
-The development environment retains TanStack Start. The shared page is `src/components/author-website.tsx`; its interactions need no server functions.
-
-## Portable static build
+Use Node **22** and npm. `.npmrc` retains `legacy-peer-deps=true` for the inherited dependency tree.
 
 ```sh
 npm ci
 npm run build
 npm run preview
+npm run typecheck
+npm test
+npm run test:e2e
 ```
 
-The build uses ordinary Vite/React through `vite.static.config.ts`, `static.html` and `src/static-entry.tsx`. Output is **dist**, including **dist/index.html**. The static output excludes the TanStack server and editor error reporting. It needs no runtime secrets or backend services. `npm run build:lovable` is the separate editor build and is **not** the Cloudflare build command.
+`npm run dev` uses the standalone Vite configuration at `/static.html`. Prefer the production preview for rendering and SEO checks. Browser tests use Chrome; install it with `npx playwright install chrome` if unavailable. GitHub Actions repeats typechecking, unit tests, build and browser checks on Node 22. Existing TanStack files remain as historical compatibility code and are excluded from the deployed entry point.
 
-## Cloudflare Pages — final settings
+Browser checks verify actual response HTML, metadata/assets, no-JavaScript use, hydration errors, desktop/mobile layout, Radix keyboard controls, enquiry preselection and clipboard fallback, axe accessibility and butterfly behaviour. Screenshots/traces are local ignored artifacts. Lighthouse reports are lab measurements, not proof of field Core Web Vitals or a particular third-party grade.
 
-These settings supersede the earlier Lovable-to-GitHub connection instructions and automatic-install suggestion in the historical handover notes.
+## Existing Cloudflare Worker
 
-Cloudflare dashboard → **Workers & Pages → Create application → Pages → Connect to Git**. Select **EthanSharpNZ/jeanie-calder-website**. Grant Cloudflare access to this repository only.
+`wrangler.jsonc` targets the existing `jeanie-calder-website` Worker and the generated `dist` directory with real 404 handling. It does not specify or change custom-domain routes.
 
-| Setting | Value |
-| --- | --- |
-| Suggested project name | `jeanie-calder-preview` |
-| Framework preset | **None** |
-| Production branch | `main` |
-| Root directory | Leave blank (repository root) |
-| Build command | `npm ci && npm run build` |
-| Build output directory | `dist` |
-| Environment variable | `NODE_VERSION=22` |
-| Environment variable | `SKIP_DEPENDENCY_INSTALL=1` |
+- Production branch: `main`
+- Node version: `22`
+- Build: `npm ci && npm run build`
+- Deploy: `npx wrangler deploy`
+- Validate without publishing: `npx wrangler deploy --dry-run`
 
-Set both build variables for production and preview environments. These are configuration values, not secrets. Explicit installation uses the tested npm lockfile rather than relying on package-manager auto-detection; the original `bun.lock` is retained for source completeness, not for this deployment.
+Retain the existing Workers Git connection and domain configuration. Cloudflare dashboard build settings are external to this repository and must be checked when deploying. Do not follow the historical Pages setup instructions in old handover notes.
 
-Select **Save and Deploy**, review the generated `pages.dev` address, and leave the client domain unconnected until approvals are complete. No Worker, Function, API key, or separate form service is required.
+Production output allows crawling and uses the existing workers.dev origin for canonical, sitemap and social URLs. If publishing an unapproved preview branch, apply noindex to that preview environment; never point a preview canonical at a new production domain automatically.
 
-Official references: [Pages Git integration](https://developers.cloudflare.com/pages/get-started/git-integration/) and [Node version / skipping automatic installation](https://developers.cloudflare.com/pages/configuration/build-image/).
+## Editing and release workflow
 
-## Media and preview safeguards
+Start from current GitHub `main`, work on a `codex/` branch, preserve the approved visual design and masters, test and show the concrete change. Commit/push and release only approved updates. After release, verify the live response contains the full HTML and head tags, assets load, missing URLs return 404, headers allow indexing, and run a fresh mobile/desktop audit. Revert the release commit for rollback; do not rewrite published history.
 
-All nine approved images are ordinary repository-owned WebP files under `src/assets`. They are bundled locally; neither builds nor site visitors need the authenticated Lovable preview for media. Fonts are installed through Fontsource packages (Cormorant Garamond and DM Sans, SIL Open Font License); no standalone font binaries are included in this repository. No original stock MOV, publisher PDF, account credentials or chat history is included.
-
-Retain **ASSET_CREDITS.md**. The fee photograph and the uploaded hero animation have separate licensing terms; only the fee-image adaptation is CC BY-SA. The hero animation's licence certificate must be retained privately before launch and has not been supplied in this handover.
-
-The preview stays noindex through page metadata, `public/robots.txt` and `public/_headers`. Headers also set `nosniff` and Referrer-Policy. **Noindex is not password protection.** Client approval of copy, fees, publication/purchase details and contact terms is still required. See **HANDOVER.md** for those outstanding approvals. The site has not yet been verified in Safari/Firefox or on Cloudflare's live hosting.
+On 13 October 2026 the owner confirmed the copy, programme fees and supplied animation licence. This records that confirmation, not independent inspection of the private licence certificate. Currency/GST details and a purchase link are not invented; existing copy is preserved apart from removal of the public design-preview review dialog.

@@ -4,9 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ProgrammeInterestSelect } from "@/components/programme-interest-select";
 import { ButterflyFeeSymbol } from "@/components/photo-butterfly";
-import { HeroButterfly } from "@/components/hero-butterfly";
+import { DeferredButterfly as HeroButterfly } from "@/components/deferred-butterfly";
 import { composeEnquiry, programmes, publicEmail, type Interest } from "@/lib/author-content";
-import coverUrl from "@/assets/jeanie-calder-front-cover.webp";
+import coverUrl from "@/assets/optimized/book-640.webp";
+import coverSmall from "@/assets/optimized/book-320.webp";
+import coverMedium from "@/assets/optimized/book-400.webp";
+import coverLarge from "@/assets/optimized/book-960.webp";
 const cover = { url: coverUrl };
 
 const navItems = [{ href: "#book", label: "Book" }, { href: "#programmes", label: "Programmes" }, { href: "#about", label: "About" }];
@@ -22,23 +25,6 @@ function ImageCredit() {
         <p>Fee photograph licensed under <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noreferrer">Creative Commons Attribution-ShareAlike 3.0</a>. Changes: transparent WebP optimisation and resized display. This adaptation is shared under the same licence.</p>
         <p>This licence does not apply to the hero video, website or book cover. No endorsement by the photographers is implied.</p>
       </div>
-    </DialogContent>
-  </Dialog>;
-}
-
-function ReviewNotes() {
-  return <Dialog>
-    <DialogTrigger asChild><Button variant="ghost" className="preview-trigger" aria-label="Design preview review notes"><span className="preview-dot" />Design preview</Button></DialogTrigger>
-    <DialogContent>
-      <DialogTitle className="font-display text-3xl font-normal">A few things to confirm</DialogTitle>
-      <DialogDescription>This is a design preview. These details need Jeanie’s approval before the website goes live.</DialogDescription>
-      <ul className="review-list">
-        <li><strong>Identity & book</strong>Website name and domain; the title discrepancy in the brief. This preview uses only “How to Lose Weight and Keep It Off”. Confirm publication details and a book purchase link.</li>
-        <li><strong>Programme fees</strong>$1,000 / $10,000 / $100,000 are from the initial brief. Confirm currency, tax/GST treatment and programme inclusions.</li>
-        <li><strong>Programme details</strong>Confirm format, entry requirements and client-approved descriptions. No dates, qualifications or teaching rights are assumed.</li>
-        <li><strong>About Jeanie</strong>Approve the introductory copy and supply an author photo and biography if desired.</li>
-        <li><strong>Contact & final copy</strong>Approve the public email and contact policy. The composer opens an email draft; this website does not send or store enquiries. No analytics or trackers are included.</li>
-      </ul>
     </DialogContent>
   </Dialog>;
 }
@@ -118,6 +104,7 @@ function Contact({ interest, setInterest }: { interest: Interest; setInterest: (
       <h2 id="contact-heading">Contact Jeanie</h2>
       <p>For book and programme enquiries.</p>
       <a className="contact-email" href={`mailto:${publicEmail}`}>{publicEmail}</a>
+      <noscript><p className="form-helper">To enquire without JavaScript, use the email link above to contact Jeanie directly.</p></noscript>
     </div>
     <form ref={formRef} onSubmit={openDraft} className="contact-form">
       <div className="form-row">
@@ -141,10 +128,10 @@ export function AuthorWebsite() {
   return <div id="top">
     <a href="#main" className="skip-link">Skip to content</a>
     <Header />
-    <main id="main">
+    <main id="main" tabIndex={-1}>
       <section id="book" className="site-wrap hero" aria-labelledby="hero-heading">
         <div className="hero-composition">
-          <div className="book-stage"><div className="book-object"><img className="book-cover" src={cover.url} alt="Front cover of How to Lose Weight and Keep It Off by Jeanie Calder, with a canyon beneath a blue sky and white lettering" width="1214" height="1795" loading="eager" fetchPriority="high" /><HeroButterfly paused={motionPaused} /></div></div>
+          <div className="book-stage"><div className="book-object"><img className="book-cover" src={cover.url} srcSet={`${coverSmall} 320w, ${coverMedium} 400w, ${cover.url} 640w, ${coverLarge} 960w`} sizes="(max-width: 350px) 174px, (max-width: 760px) 185px, (max-width: 1050px) 245px, 285px" alt="Front cover of How to Lose Weight and Keep It Off by Jeanie Calder, with a canyon beneath a blue sky and white lettering" width="1214" height="1795" loading="eager" fetchPriority="high" /><HeroButterfly paused={motionPaused} /></div></div>
           <div className="hero-copy"><h1 id="hero-heading">How to Lose Weight and Keep It Off</h1><p className="book-byline">Jeanie Calder · Olympia Publishers</p><p className="hero-intro">Explore Jeanie Calder’s book and programmes focused on food, self-acceptance and personal change.</p><div className="hero-actions"><Button asChild variant="author"><a href="#contact" onClick={() => enquire("Book enquiry")}>Ask about the book<ArrowRight /></a></Button><Button asChild variant="editorial"><a href="#programmes">View programmes<ArrowDown /></a></Button></div></div>
         </div>
       </section>
@@ -160,6 +147,6 @@ export function AuthorWebsite() {
       </section>
       <Contact interest={interest} setInterest={setInterest} />
     </main>
-    <footer className="site-footer"><div className="site-wrap footer-inner"><a className="footer-name" href="#top">Jeanie Calder</a><div className="footer-controls"><ReviewNotes /><ImageCredit /><Button type="button" variant="ghost" className="motion-toggle" aria-pressed={motionPaused} onClick={() => setMotionPaused(value => !value)}>{motionPaused ? "Resume animation" : "Pause animation"}</Button></div></div></footer>
+    <footer className="site-footer"><div className="site-wrap footer-inner"><a className="footer-name" href="#top">Jeanie Calder</a><div className="footer-controls"><ImageCredit /><Button type="button" variant="ghost" className="motion-toggle" aria-pressed={motionPaused} onClick={() => setMotionPaused(value => !value)}>{motionPaused ? "Resume animation" : "Pause animation"}</Button></div></div></footer>
   </div>;
 }

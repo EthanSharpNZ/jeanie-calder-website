@@ -1,2 +1,4 @@
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://jeanie-calder-website.studionz.workers.dev/sitemap.xml

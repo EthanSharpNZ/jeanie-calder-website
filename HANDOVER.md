@@ -1,3 +1,5 @@
+> Historical handover: deployment and approval statements below describe the original preview. README.md now defines the Workers Static Assets/SSG workflow. On 13 October 2026 the owner confirmed copy, fees and animation licence. Current production-readiness work remains unreleased until approved.
+
 # The Web Guys — Jeanie Calder handover
 
 ## Status

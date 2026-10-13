@@ -33,10 +33,17 @@ describe("supplied butterfly flight", () => {
     expect(shouldAnimate("idle", true, false, false, true)).toBe(false);
     expect(shouldAnimate("waiting", true, false, false, false)).toBe(false);
   });
-  it("uses a continuous forward/back resting segment with matching endpoints", () => {
+  it("keeps lively resting strokes continuous, bounded and anchored at cycle boundaries", () => {
     expect(idleFrame(0)).toBe(185);
-    expect(idleFrame(1800)).toBe(195);
-    expect(idleFrame(3600)).toBe(185);
-    expect(Math.abs(idleFrame(1799) - idleFrame(1801))).toBeLessThanOrEqual(1);
+    expect(idleFrame(450)).toBe(195);
+    for (const boundary of [900, 2000, 2800, 4000]) {
+      expect(idleFrame(boundary)).toBe(185);
+      expect(Math.abs(idleFrame(boundary - 1) - idleFrame(boundary + 1))).toBeLessThanOrEqual(1);
+    }
+    for (let time = 0; time < 8000; time += 1000 / 30) {
+      expect(idleFrame(time)).toBeGreaterThanOrEqual(185);
+      expect(idleFrame(time)).toBeLessThanOrEqual(195);
+      expect(Math.abs(idleFrame(time + 1000 / 30) - idleFrame(time))).toBeLessThanOrEqual(1);
+    }
   });
 });

@@ -12,7 +12,7 @@ import coverMedium from "@/assets/optimized/book-400.webp";
 import coverLarge from "@/assets/optimized/book-960.webp";
 const cover = { url: coverUrl };
 
-const navItems = [{ href: "#book", label: "Book" }, { href: "#programmes", label: "Programmes" }, { href: "#about", label: "About" }];
+const navItems = [{ href: "#book", label: "Book" }, { href: "#about", label: "About" }, { href: "#programmes", label: "Programmes" }];
 
 function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -121,16 +121,16 @@ export function AuthorWebsite() {
           <div className="hero-copy"><p className="hero-eyebrow">A book by Jeanie Calder</p><h1 id="hero-heading"><span>How to Lose Weight</span>{" "}<em>and Keep It Off</em></h1><p className="book-byline">Jeanie Calder · Olympia Publishers</p><p className="hero-intro">Discover Jeanie’s approach to food, self acceptance and a nourishing life. Begin with the book or explore her programmes.</p><div className="hero-actions"><Button asChild variant="author"><a href={bookPurchaseUrl}>Pre-order the book</a></Button><Button asChild variant="editorial"><a href="#programmes">View programmes</a></Button></div></div>
         </div>
       </section>
+      <section id="about" className="site-wrap about" aria-labelledby="about-heading">
+        <div className="about-intro"><p className="section-eyebrow">Author and programme creator</p><h2 id="about-heading">About Jeanie Calder</h2><p>Jeanie writes about food, how we see ourselves and what makes life nourishing.</p></div>
+        <div className="about-body"><div className="about-detail"><h3>The book</h3><p>Author of <cite>How to Lose Weight and Keep It Off</cite>, published by Olympia Publishers.</p></div><div className="about-detail"><h3>Her approach</h3><p>Self acceptance, enjoyment and caring for ourselves beyond the plate.</p></div><div className="about-detail"><h3>The programmes</h3><p>For people exploring their relationship with food and those who want to teach her approach.</p></div><Button asChild variant="editorial"><a href="#contact" onClick={() => enquire("General enquiry")}>Get to know Jeanie</a></Button></div>
+      </section>
       <section id="programmes" aria-labelledby="programmes-heading">
         <div className="site-wrap programmes-intro"><h2 id="programmes-heading">Programmes</h2><p>For yourself, your teaching practice or the next generation of teachers.</p></div>
         {programmes.map(programme => <section key={programme.slug} className={`programme-band programme-${programme.theme}`} aria-labelledby={programme.slug}>
           <div className="site-wrap programme-inner"><div className="programme-content"><p className="programme-audience">{programme.audience}</p><h3 id={programme.slug}>{programme.name}</h3><p>{programme.body}</p>{programme.slug === "teacher-of-teachers" && <div className="resume-note">You’re welcome to send a resume to <a href={`mailto:${publicEmail}`}>{publicEmail}</a>.</div>}</div><div className="programme-side"><p className="fee-label">Programme fee</p><p className="programme-fee"><ButterflyFeeSymbol /><span>{programme.fee}</span></p><Button asChild variant="editorial"><a href="#contact" onClick={() => enquire(programme.interest)}>{programme.cta}</a></Button></div></div>
         </section>)}
         <p className="site-wrap fee-note">Ask Jeanie about dates, inclusions, currency and tax before enrolling.</p>
-      </section>
-      <section id="about" className="site-wrap about" aria-labelledby="about-heading">
-        <div className="about-intro"><p className="section-eyebrow">Author and programme creator</p><h2 id="about-heading">About Jeanie Calder</h2><p>Jeanie writes about food, how we see ourselves and what makes life nourishing.</p></div>
-        <div className="about-body"><div className="about-detail"><h3>The book</h3><p>Author of <cite>How to Lose Weight and Keep It Off</cite>, published by Olympia Publishers.</p></div><div className="about-detail"><h3>Her approach</h3><p>Self acceptance, enjoyment and caring for ourselves beyond the plate.</p></div><div className="about-detail"><h3>The programmes</h3><p>For people exploring their relationship with food and those who want to teach her approach.</p></div><Button asChild variant="editorial"><a href="#contact" onClick={() => enquire("General enquiry")}>Get to know Jeanie</a></Button></div>
       </section>
       <Contact interest={interest} setInterest={setInterest} />
     </main>

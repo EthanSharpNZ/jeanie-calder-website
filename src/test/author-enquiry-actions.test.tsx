@@ -13,7 +13,6 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("Author enquiry preselection after clean-up", () => {
   for (const [action, interest] of [
-    ["Ask about the book", "Book enquiry"],
     ["Enquire about the course", "The ten-week course"],
     ["Ask about teacher training", "Teaching the ten-week course"],
     ["Discuss the programme", "Teacher of teachers programme"],

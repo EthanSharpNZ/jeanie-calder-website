@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { ProgrammeInterestSelect } from "@/components/programme-interest-select";
 import { ButterflyFeeSymbol } from "@/components/photo-butterfly";
 import { DeferredButterfly as HeroButterfly } from "@/components/deferred-butterfly";
-import { composeEnquiry, programmes, publicEmail, type Interest } from "@/lib/author-content";
+import { bookPurchaseUrl, composeEnquiry, programmes, publicEmail, type Interest } from "@/lib/author-content";
 import coverUrl from "@/assets/optimized/book-640.webp";
 import coverSmall from "@/assets/optimized/book-320.webp";
 import coverMedium from "@/assets/optimized/book-400.webp";
@@ -118,7 +118,7 @@ export function AuthorWebsite() {
       <section id="book" className="site-wrap hero" aria-labelledby="hero-heading">
         <div className="hero-composition">
           <div className="book-stage"><div className="book-object"><img className="book-cover" src={cover.url} srcSet={`${coverSmall} 320w, ${coverMedium} 400w, ${cover.url} 640w, ${coverLarge} 960w`} sizes="(max-width: 350px) 174px, (max-width: 760px) 185px, (max-width: 1050px) 245px, 285px" alt="Front cover of How to Lose Weight and Keep It Off by Jeanie Calder, with a canyon beneath a blue sky and white lettering" width="1214" height="1795" loading="eager" fetchPriority="high" /><HeroButterfly paused={false} /></div></div>
-          <div className="hero-copy"><p className="hero-eyebrow">A book by Jeanie Calder</p><h1 id="hero-heading"><span>How to Lose Weight</span>{" "}<em>and Keep It Off</em></h1><p className="book-byline">Jeanie Calder · Olympia Publishers</p><p className="hero-intro">Discover Jeanie’s approach to food, self acceptance and a nourishing life. Begin with the book or explore her programmes.</p><div className="hero-actions"><Button asChild variant="author"><a href="#contact" onClick={() => enquire("Book enquiry")}>Ask about the book</a></Button><Button asChild variant="editorial"><a href="#programmes">View programmes</a></Button></div></div>
+          <div className="hero-copy"><p className="hero-eyebrow">A book by Jeanie Calder</p><h1 id="hero-heading"><span>How to Lose Weight</span>{" "}<em>and Keep It Off</em></h1><p className="book-byline">Jeanie Calder · Olympia Publishers</p><p className="hero-intro">Discover Jeanie’s approach to food, self acceptance and a nourishing life. Begin with the book or explore her programmes.</p><div className="hero-actions"><Button asChild variant="author"><a href={bookPurchaseUrl}>Pre-order the book</a></Button><Button asChild variant="editorial"><a href="#programmes">View programmes</a></Button></div></div>
         </div>
       </section>
       <section id="programmes" aria-labelledby="programmes-heading">

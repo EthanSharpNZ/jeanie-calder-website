@@ -41,6 +41,7 @@ for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(page.locator(".book-cover")).toBeVisible();
+    await expect(page.getByRole("link", { name: "Pre-order the book", exact: true })).toHaveAttribute("href", "https://olympiapublishers.com/book/how-to-lose-weight-and-keep-it-off");
     await expect(page.locator(".site-header")).toHaveCSS("position", "sticky");
     await expect.poll(() => page.locator(".book-cover").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
     if (width < 760) {
@@ -50,7 +51,6 @@ for (const width of [1440, 1024, 768, 390, 320]) {
       await expect(page.getByRole("button", { name: "Open navigation menu" })).toBeFocused();
     }
     for (const [action, interest] of [
-      ["Ask about the book", "Book enquiry"],
       ["Enquire about the course", "The ten-week course"],
       ["Ask about teacher training", "Teaching the ten-week course"],
       ["Discuss the programme", "Teacher of teachers programme"],

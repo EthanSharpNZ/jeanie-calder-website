@@ -1,3 +1,4 @@
+export const bookPurchaseUrl = "https://olympiapublishers.com/book/how-to-lose-weight-and-keep-it-off";
 export const publicEmail = "calderjeanie@gmail.com";
 export const interests = ["General enquiry", "Book enquiry", "The ten-week course", "Teaching the ten-week course", "Teacher of teachers programme"] as const;
 export type Interest = typeof interests[number];

@@ -1,7 +1,10 @@
 import "@testing-library/jest-dom/vitest";
 
 // jsdom has no drawing surface; real canvas playback is verified in Chromium.
-Object.defineProperty(HTMLCanvasElement.prototype, "getContext", { writable: true, value: () => null });
+Object.defineProperty(HTMLCanvasElement.prototype, "getContext", {
+  writable: true,
+  value: () => null,
+});
 
 Object.defineProperty(window, "scrollTo", {
   writable: true,

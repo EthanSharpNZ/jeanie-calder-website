@@ -13,7 +13,9 @@ export function idleFrame(elapsed: number) {
   for (const duration of REST_CYCLES_MS) {
     if (time < duration) {
       const progress = time / (duration / 2);
-      return Math.round(REST_START + (REST_END - REST_START) * (progress <= 1 ? progress : 2 - progress));
+      return Math.round(
+        REST_START + (REST_END - REST_START) * (progress <= 1 ? progress : 2 - progress),
+      );
     }
     time -= duration;
   }
@@ -29,6 +31,12 @@ export function phaseAfterElapsed(phase: FlightPhase, elapsed: number): FlightPh
   return phase === "arrival" && elapsed >= ARRIVAL_MS ? "idle" : phase;
 }
 
-export function shouldAnimate(phase: FlightPhase, visible: boolean, hidden: boolean, paused: boolean, still: boolean) {
+export function shouldAnimate(
+  phase: FlightPhase,
+  visible: boolean,
+  hidden: boolean,
+  paused: boolean,
+  still: boolean,
+) {
   return phase !== "waiting" && visible && !hidden && !paused && !still;
 }

@@ -10,13 +10,21 @@ export function DeferredButterfly({ paused }: { paused: boolean }) {
     let idle: number | undefined;
     let timer: number | undefined;
     const load = () => {
-      void import("./hero-butterfly").then(module => {
-        if (!cancelled) setAnimation(() => module.HeroButterfly);
-      }).catch(() => { /* Decorative animation must never block the page. */ });
+      void import("./hero-butterfly")
+        .then((module) => {
+          if (!cancelled) setAnimation(() => module.HeroButterfly);
+        })
+        .catch(() => {
+          /* Decorative animation must never block the page. */
+        });
     };
     const schedule = () => {
-      if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(load, { timeout: 1200 });
-      else timer = window.setTimeout(load, 200);
+      // Give the cover and above-the-fold text time to paint before decorative media.
+      timer = window.setTimeout(() => {
+        if (typeof window.requestIdleCallback === "function")
+          idle = window.requestIdleCallback(load, { timeout: 1200 });
+        else load();
+      }, 600);
     };
     if (cover?.complete) schedule();
     else cover?.addEventListener("load", schedule, { once: true });
@@ -27,5 +35,9 @@ export function DeferredButterfly({ paused }: { paused: boolean }) {
       if (timer !== undefined) window.clearTimeout(timer);
     };
   }, []);
-  return <span ref={host} aria-hidden="true">{Animation && <Animation paused={paused} />}</span>;
+  return (
+    <span ref={host} aria-hidden="true">
+      {Animation && <Animation paused={paused} />}
+    </span>
+  );
 }

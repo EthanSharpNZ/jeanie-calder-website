@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { ARRIVAL_MS, idleFrame, phaseAfterElapsed, phaseForVisibility, shouldAnimate } from "@/lib/butterfly-flight";
+import {
+  ARRIVAL_MS,
+  idleFrame,
+  phaseAfterElapsed,
+  phaseForVisibility,
+  shouldAnimate,
+} from "@/lib/butterfly-flight";
 
 describe("supplied butterfly flight", () => {
   it("completes one three-second arrival and stays idle indefinitely", () => {
